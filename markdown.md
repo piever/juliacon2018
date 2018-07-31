@@ -151,7 +151,8 @@ using StatPlots
 end
 ```
 
-$$\sum_{i=1}^\infty$$
 ---
 
 # Interactivity
+
+The [InteractBase](https://github.com/piever/InteractBase.jl/) package allows the creation of interactive user interfaces based on JuliaDBMeta and StatPlots.
