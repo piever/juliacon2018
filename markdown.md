@@ -151,6 +151,7 @@ using StatPlots
 end
 ```
 
+$$\sum_{i=1}^\infty$$
 ---
 
 # Interactivity
