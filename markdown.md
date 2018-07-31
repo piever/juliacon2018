@@ -137,6 +137,8 @@ The pipeline has support for grouping:
 end
 ```
 
+---
+
 # Pipeline: plotting
 
 The pipeline has support for plotting via StatPlots and the `@df` macro:

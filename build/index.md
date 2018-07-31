@@ -320,14 +320,14 @@ All these macros have curried versions and can be combined with vanilla Julia Ba
 
 ```julia
 @apply iris begin
-    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength/:SepalWidth}
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
     _[1]
 end
 ```
 
 ```
-(Ratio = 2.9615384615384617, Sum = 2.9615384615384617)
+(Ratio = 2.9615384615384617, Sum = 10.3)
 ```
 
 
@@ -339,12 +339,12 @@ end
 # Pipeline: grouping
 
 
-All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
+The pipeline has support for grouping:
 
 
 ```julia
 @apply iris :Species begin
-    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength/:SepalWidth}
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
     _[1]
 end
@@ -353,9 +353,37 @@ end
 ```
 Table with 3 rows, 3 columns:
 Species       Ratio    Sum
-──────────────────────────────
-"setosa"      1.95652  1.95652
-"versicolor"  2.81818  2.81818
-"virginica"   2.96154  2.96154
+───────────────────────────
+"setosa"      1.95652  6.8
+"versicolor"  2.81818  8.4
+"virginica"   2.96154  10.3
 ```
+
+
+---
+
+
+
+
+# Pipeline: plotting
+
+
+The pipeline has support for plotting via StatPlots and the `@df` macro:
+
+
+```julia
+using StatPlots
+@apply iris begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    @df scatter(:Ratio, :Sum, smooth = true)
+end
+```
+
+
+---
+
+
+
+
+# Interactivity
 
