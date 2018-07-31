@@ -52,11 +52,11 @@ Replace each symbol with a reference to the respective field of a row:
 @map iris :SepalLength/:SepalWidth
 ```
 --
-- Construct anonymous function `t -> t.SepalLength / t.SepalWidth`
+* Construct anonymous function `t -> t.SepalLength / t.SepalWidth`
 --
-- store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
+* Store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
 --
-- return:
+* Return:
 
 ```julia
 map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth))
@@ -95,7 +95,7 @@ or to select data:
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
 
 ```@example meta
-iris5 = table(iris, chunks = 5);
+iris5 = table(iris, chunks = 5)
 @where iris5 :SepalLength == 4.9 && :Species == "setosa"
 ```
 
@@ -112,9 +112,43 @@ using StatsBase
 
 ---
 
-# Column-wise macros: grouping support
+# Pipeline
 
+All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
 
+```@example meta
+@apply iris begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1]
+end
+```
+---
 
+# Pipeline: grouping
+
+The pipeline has support for grouping:
+
+```@example meta
+@apply iris :Species begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1]
+end
+```
+
+# Pipeline: plotting
+
+The pipeline has support for plotting via StatPlots and the `@df` macro:
+
+```julia
+using StatPlots
+@apply iris begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    @df scatter(:Ratio, :Sum, smooth = true)
+end
+```
 
 ---
+
+# Interactivity

@@ -29,7 +29,7 @@ Pietro Vertechi, JuliaCon 2018
 --
 
 
-  * Using metaprogramming, one can make this packages simpler to use.
+  * Using metaprogramming, one can make this package simpler to use.
 
 
 --
@@ -161,13 +161,13 @@ Replace each symbol with a reference to the respective field of a row:
 --
 
 
-  * store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
+  * Store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
 
 
 --
 
 
-  * return:
+  * Return:
 
 
 ```julia
@@ -261,7 +261,7 @@ As each row-wise macro implements a local computation, it will be parallelized o
 
 
 ```julia
-iris5 = table(iris, chunks = 5);
+iris5 = table(iris, chunks = 5)
 @where iris5 :SepalLength == 4.9 && :Species == "setosa"
 ```
 
@@ -312,11 +312,50 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Column-wise macros: grouping support
+# Pipeline
 
 
-Very similar to row-wise macros, but they act on columns (each symbol gets replaced with the corresponding column). Useful when the whole column is needed:
+All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
+
+
+```julia
+@apply iris begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength/:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1]
+end
+```
+
+```
+(Ratio = 2.9615384615384617, Sum = 2.9615384615384617)
+```
 
 
 ---
+
+
+
+
+# Pipeline: grouping
+
+
+All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
+
+
+```julia
+@apply iris :Species begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength/:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1]
+end
+```
+
+```
+Table with 3 rows, 3 columns:
+Species       Ratio    Sum
+──────────────────────────────
+"setosa"      1.95652  1.95652
+"versicolor"  2.81818  2.81818
+"virginica"   2.96154  2.96154
+```
 

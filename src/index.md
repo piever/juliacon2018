@@ -9,7 +9,7 @@ Pietro Vertechi, JuliaCon 2018
 
 - The recent pure Julia library JuliaDB provides tool to store and manipulate tabular data, on a single or multiple processors.
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- Using metaprogramming, one can make this packages simpler to use.
+- Using metaprogramming, one can make this package simpler to use.
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 - JuliaDBMeta and StatPlots try to create a consistent DSL for dealing with tabular data, from data filtering and preprocessing to visualization
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
@@ -52,11 +52,11 @@ Replace each symbol with a reference to the respective field of a row:
 @map iris :SepalLength/:SepalWidth
 ```
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- Construct anonymous function `t -> t.SepalLength / t.SepalWidth`
+* Construct anonymous function `t -> t.SepalLength / t.SepalWidth`
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
+* Store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- return:
+* Return:
 
 ```julia
 map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth))
@@ -95,7 +95,7 @@ or to select data:
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
 
 ```@example meta
-iris5 = table(iris, chunks = 5);
+iris5 = table(iris, chunks = 5)
 @where iris5 :SepalLength == 4.9 && :Species == "setosa"
 ```
 
@@ -112,9 +112,27 @@ using StatsBase
 
 ---
 
-# Column-wise macros: grouping support
+# Pipeline
 
-Very similar to row-wise macros, but they act on columns (each symbol gets replaced with the corresponding column). Useful when the whole column is needed:
+All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
 
-
+```@example meta
+@apply iris begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength/:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1]
+end
+```
 ---
+
+# Pipeline: grouping
+
+All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
+
+```@example meta
+@apply iris :Species begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength/:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1]
+end
+```
