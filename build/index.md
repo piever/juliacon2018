@@ -29,7 +29,7 @@ Pietro Vertechi, JuliaCon 2018
 --
 
 
-  * Using metaprogramming, one can this packages simpler to use.
+  * Using metaprogramming, one can make this packages simpler to use.
 
 
 --
@@ -104,41 +104,38 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Colwise-macros
+# Row-wise macros
 
 
-Take an expression and transform symbols into the corresponding modules. `@where_vec`
-
-
-Use symbols as if they were columns.
+Replace each symbol with a reference to the respective field of a row:
 
 
 ```julia
-t = @with iris :SepalLength + :SepalWidth
+@map iris :SepalLength/:SepalWidth
 ```
 
 ```
 150-element Array{Float64,1}:
-  8.6
-  7.9
-  7.9
-  7.7
-  8.6
-  9.3
-  8.0
-  8.4
-  7.3
-  8.0
-  ⋮
- 10.0
-  8.5
- 10.0
- 10.0
-  9.7
-  8.8
-  9.5
-  9.6
-  8.9
+ 1.45714
+ 1.63333
+ 1.46875
+ 1.48387
+ 1.38889
+ 1.38462
+ 1.35294
+ 1.47059
+ 1.51724
+ 1.58065
+ ⋮
+ 2.22581
+ 2.14815
+ 2.125
+ 2.0303
+ 2.23333
+ 2.52
+ 2.16667
+ 1.82353
+ 1.96667
 ```
 
 
@@ -147,49 +144,74 @@ t = @with iris :SepalLength + :SepalWidth
 
 
 
-# Colwise-macros
-
-
-Take an expression and transform symbols into the corresponding modules. `@where_vec`
-
-
-Use symbols as if they were columns.
+# Row-wise macros: under the hood
 
 
 ```julia
-t = @with iris :SepalLength + :SepalWidth
+@map iris :SepalLength/:SepalWidth
 ```
 
 
-The result can be used to filter the data:
+--
+
+
+  * Construct anonymous function `t -> t.SepalLength / t.SepalWidth`
+
+
+--
+
+
+  * store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
+
+
+--
+
+
+  * return:
 
 
 ```julia
-t = @where_vec iris :SepalLength .> mean(:SepalLength)
+map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth))
+```
+
+
+---
+
+
+
+
+# Row-wise macros: examples
+
+
+The same trick can be used to add a new column:
+
+
+```julia
+@transform iris {Ratio = :SepalLength/:SepalWidth}
 ```
 
 ```
-Table with 70 rows, 5 columns:
-SepalLength  SepalWidth  PetalLength  PetalWidth  Species
-──────────────────────────────────────────────────────────────
-7.0          3.2         4.7          1.4         "versicolor"
-6.4          3.2         4.5          1.5         "versicolor"
-6.9          3.1         4.9          1.5         "versicolor"
-6.5          2.8         4.6          1.5         "versicolor"
-6.3          3.3         4.7          1.6         "versicolor"
-6.6          2.9         4.6          1.3         "versicolor"
-5.9          3.0         4.2          1.5         "versicolor"
-6.0          2.2         4.0          1.0         "versicolor"
-6.1          2.9         4.7          1.4         "versicolor"
+Table with 150 rows, 6 columns:
+SepalLength  SepalWidth  PetalLength  PetalWidth  Species      Ratio
+──────────────────────────────────────────────────────────────────────
+5.1          3.5         1.4          0.2         "setosa"     1.45714
+4.9          3.0         1.4          0.2         "setosa"     1.63333
+4.7          3.2         1.3          0.2         "setosa"     1.46875
+4.6          3.1         1.5          0.2         "setosa"     1.48387
+5.0          3.6         1.4          0.2         "setosa"     1.38889
+5.4          3.9         1.7          0.4         "setosa"     1.38462
+4.6          3.4         1.4          0.3         "setosa"     1.35294
+5.0          3.4         1.5          0.2         "setosa"     1.47059
+4.4          2.9         1.4          0.2         "setosa"     1.51724
 ⋮
-6.9          3.1         5.1          2.3         "virginica"
-6.8          3.2         5.9          2.3         "virginica"
-6.7          3.3         5.7          2.5         "virginica"
-6.7          3.0         5.2          2.3         "virginica"
-6.3          2.5         5.0          1.9         "virginica"
-6.5          3.0         5.2          2.0         "virginica"
-6.2          3.4         5.4          2.3         "virginica"
-5.9          3.0         5.1          1.8         "virginica"
+5.8          2.7         5.1          1.9         "virginica"  2.14815
+6.8          3.2         5.9          2.3         "virginica"  2.125
+6.7          3.3         5.7          2.5         "virginica"  2.0303
+6.7          3.0         5.2          2.3         "virginica"  2.23333
+6.3          2.5         5.0          1.9         "virginica"  2.52
+6.5          3.0         5.2          2.0         "virginica"  2.16667
+6.2          3.4         5.4          2.3         "virginica"  1.82353
+5.9          3.0         5.1          1.8         "virginica"  1.96667
 ```
 
 
@@ -198,45 +220,32 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Colwise-macros
+# Row-wise macros: examples
 
 
-Take an expression and transform symbols into the corresponding modules. `@where_vec`
-
-
-Use symbols as if they were columns.
+The same trick can be used to add a new column:
 
 
 ```julia
-t = @with iris :SepalLength + :SepalWidth
+@transform iris {Ratio = :SepalLength/:SepalWidth}
 ```
 
 
-The result can be used to filter the data:
+or to select data:
 
 
 ```julia
-t = @where_vec iris :SepalLength .> mean(:SepalLength)
-```
-
-
-or added as a new column:
-
-
-```julia
-t = @transform_vec iris {Ratio = :SepalLength ./ :SepalWidth}
-t[1:5]
+@where iris :SepalLength == 4.9 && :Species == "setosa"
 ```
 
 ```
-Table with 5 rows, 6 columns:
-SepalLength  SepalWidth  PetalLength  PetalWidth  Species   Ratio
-───────────────────────────────────────────────────────────────────
-5.1          3.5         1.4          0.2         "setosa"  1.45714
-4.9          3.0         1.4          0.2         "setosa"  1.63333
-4.7          3.2         1.3          0.2         "setosa"  1.46875
-4.6          3.1         1.5          0.2         "setosa"  1.48387
-5.0          3.6         1.4          0.2         "setosa"  1.38889
+Table with 4 rows, 5 columns:
+SepalLength  SepalWidth  PetalLength  PetalWidth  Species
+──────────────────────────────────────────────────────────
+4.9          3.0         1.4          0.2         "setosa"
+4.9          3.1         1.5          0.1         "setosa"
+4.9          3.1         1.5          0.2         "setosa"
+4.9          3.6         1.4          0.1         "setosa"
 ```
 
 
@@ -245,37 +254,69 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species   Ratio
 
 
 
-# Row-wise macros
+# Row-wise macros: out-of-core
+
+
+As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
 
 
 ```julia
-@filter iris :Species != "setosa"
-@transform iris {Ratio = :SepalLength / :SepalWidth}
-using JuliaDBMeta
-filepath = Pkg.dir("JuliaDBMeta", "test", "tables", "iris.csv")
-iris = loadtable(filepath)
+iris5 = table(iris, chunks = 5);
+@where iris5 :SepalLength == 4.9 && :Species == "setosa"
 ```
 
 ```
-Table with 150 rows, 5 columns:
+Distributed Table with 4 rows in 2 chunks:
+SepalLength  SepalWidth  PetalLength  PetalWidth  Species
+──────────────────────────────────────────────────────────
+4.9          3.0         1.4          0.2         "setosa"
+4.9          3.1         1.5          0.1         "setosa"
+4.9          3.1         1.5          0.2         "setosa"
+4.9          3.6         1.4          0.1         "setosa"
+```
+
+
+---
+
+
+
+
+# Column-wise macros
+
+
+Very similar to row-wise macros, but they act on columns (each symbol gets replaced with the corresponding column). Useful when the whole column is needed:
+
+
+```julia
+using StatsBase
+@where_vec iris :SepalLength .> quantile(:SepalLength, 0.95)
+```
+
+```
+Table with 8 rows, 5 columns:
 SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 ─────────────────────────────────────────────────────────────
-5.1          3.5         1.4          0.2         "setosa"
-4.9          3.0         1.4          0.2         "setosa"
-4.7          3.2         1.3          0.2         "setosa"
-4.6          3.1         1.5          0.2         "setosa"
-5.0          3.6         1.4          0.2         "setosa"
-5.4          3.9         1.7          0.4         "setosa"
-4.6          3.4         1.4          0.3         "setosa"
-5.0          3.4         1.5          0.2         "setosa"
-4.4          2.9         1.4          0.2         "setosa"
-⋮
-5.8          2.7         5.1          1.9         "virginica"
-6.8          3.2         5.9          2.3         "virginica"
-6.7          3.3         5.7          2.5         "virginica"
-6.7          3.0         5.2          2.3         "virginica"
-6.3          2.5         5.0          1.9         "virginica"
-6.5          3.0         5.2          2.0         "virginica"
-6.2          3.4         5.4          2.3         "virginica"
-5.9          3.0         5.1          1.8         "virginica"
+7.6          3.0         6.6          2.1         "virginica"
+7.3          2.9         6.3          1.8         "virginica"
+7.7          3.8         6.7          2.2         "virginica"
+7.7          2.6         6.9          2.3         "virginica"
+7.7          2.8         6.7          2.0         "virginica"
+7.4          2.8         6.1          1.9         "virginica"
+7.9          3.8         6.4          2.0         "virginica"
+7.7          3.0         6.1          2.3         "virginica"
 ```
+
+
+---
+
+
+
+
+# Column-wise macros: grouping support
+
+
+Very similar to row-wise macros, but they act on columns (each symbol gets replaced with the corresponding column). Useful when the whole column is needed:
+
+
+---
+

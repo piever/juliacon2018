@@ -9,7 +9,7 @@ Pietro Vertechi, JuliaCon 2018
 
 - The recent pure Julia library JuliaDB provides tool to store and manipulate tabular data, on a single or multiple processors.
 --
-- Using metaprogramming, one can this packages simpler to use.
+- Using metaprogramming, one can make this package simpler to use.
 --
 - JuliaDBMeta and StatPlots try to create a consistent DSL for dealing with tabular data, from data filtering and preprocessing to visualization
 --
@@ -35,92 +35,86 @@ iris = loadtable(filepath)
 ```
 
 ---
-# Column-wise macros
-
-Take an expression and transform symbols into the corresponding columns.
-
-```julia
-t = @with iris :SepalLength + :SepalWidth
-```
-```
-150-element Array{Float64,1}:
-  8.6
-  7.9
-  7.9
-  7.7
-  8.6
-  ...
-```
-
----
-
-# Column-wise macros
-
-Take an expression and transform symbols into the corresponding columns.
-
-```julia
-t = @with iris :SepalLength + :SepalWidth
-```
-
-The result of the expression can be used to filter the data:
-
-```julia
-t = @where_vec iris :SepalLength .> mean(:SepalLength)
-```
-
-```
-Table with 70 rows, 5 columns:
-SepalLength  SepalWidth  PetalLength  PetalWidth  Species
-──────────────────────────────────────────────────────────────
-7.0          3.2         4.7          1.4         "versicolor"
-6.4          3.2         4.5          1.5         "versicolor"
-6.9          3.1         4.9          1.5         "versicolor"
-6.5          2.8         4.6          1.5         "versicolor"
-6.3          3.3         4.7          1.6         "versicolor"
-```
-
----
-
-# Column-wise macros
-
-Take an expression and transform symbols into the corresponding columns.
-
-```julia
-t = @with iris :SepalLength + :SepalWidth
-```
-
-The result can be used to filter the data:
-
-```julia
-t = @where_vec iris :SepalLength .> mean(:SepalLength)
-```
-
-or added as a new column:
-
-```julia
-t = @transform_vec iris {Ratio = :SepalLength ./ :SepalWidth}
-```
-
-```
-Table with 5 rows, 6 columns:
-SepalLength  SepalWidth  PetalLength  PetalWidth  Species   Ratio
-───────────────────────────────────────────────────────────────────
-5.1          3.5         1.4          0.2         "setosa"  1.45714
-4.9          3.0         1.4          0.2         "setosa"  1.63333
-4.7          3.2         1.3          0.2         "setosa"  1.46875
-4.6          3.1         1.5          0.2         "setosa"  1.48387
-5.0          3.6         1.4          0.2         "setosa"  1.38889
-```
-
----
 
 # Row-wise macros
 
-Same as column-wise
+Replace each symbol with a reference to the respective field of a row:
+
 ```@example meta
-@filter iris :Species != "setosa"
-@transform iris {Ratio = :SepalLength / :SepalWidth}
-using JuliaDBMeta
-filepath = Pkg.dir("JuliaDBMeta", "test", "tables", "iris.csv")
-iris = loadtable(filepath)
+@map iris :SepalLength/:SepalWidth
 ```
+
+---
+
+# Row-wise macros: under the hood
+
+```julia
+@map iris :SepalLength/:SepalWidth
+```
+--
+- Construct anonymous function `t -> t.SepalLength / t.SepalWidth`
+--
+- store list of fields that are actually used: `(:SepalLength, :SepalWidth)`
+--
+- return:
+
+```julia
+map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth))
+```
+
+---
+
+# Row-wise macros: examples
+
+The same trick can be used to add a new column:
+
+```@example meta
+@transform iris {Ratio = :SepalLength/:SepalWidth}
+```
+
+---
+
+# Row-wise macros: examples
+
+The same trick can be used to add a new column:
+
+```julia
+@transform iris {Ratio = :SepalLength/:SepalWidth}
+```
+
+or to select data:
+
+```@example meta
+@where iris :SepalLength == 4.9 && :Species == "setosa"
+```
+
+---
+
+# Row-wise macros: out-of-core
+
+As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
+
+```@example meta
+iris5 = table(iris, chunks = 5);
+@where iris5 :SepalLength == 4.9 && :Species == "setosa"
+```
+
+---
+
+# Column-wise macros
+
+Very similar to row-wise macros, but they act on columns (each symbol gets replaced with the corresponding column). Useful when the whole column is needed:
+
+```@example meta
+using StatsBase
+@where_vec iris :SepalLength .> quantile(:SepalLength, 0.95)
+```
+
+---
+
+# Column-wise macros: grouping support
+
+
+
+
+---
