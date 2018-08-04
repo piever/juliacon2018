@@ -377,12 +377,16 @@ All these macros have curried versions and can be combined with vanilla Julia Ba
 @apply iris begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1]
+    _[1:2]
 end
 ```
 
 ```
-(Ratio = 2.9615384615384617, Sum = 10.3)
+Table with 2 rows, 2 columns:
+Ratio    Sum
+─────────────
+2.96154  10.3
+2.81818  8.4
 ```
 
 
@@ -398,20 +402,59 @@ The pipeline has support for grouping:
 
 
 ```julia
-@apply iris :Species begin
+@apply iris :Species flatten=true begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1]
+    _[1:2]
 end
 ```
 
 ```
-Table with 3 rows, 3 columns:
+Table with 6 rows, 3 columns:
 Species       Ratio    Sum
 ───────────────────────────
 "setosa"      1.95652  6.8
+"setosa"      1.66667  8.0
 "versicolor"  2.81818  8.4
+"versicolor"  2.73913  8.6
 "virginica"   2.96154  10.3
+"virginica"   2.75     10.5
+```
+
+
+---
+
+
+
+
+# Pipeline: out of core
+
+
+And for out of core computations:
+
+
+```julia
+@applychunked iris5 begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:2]
+end
+```
+
+```
+Distributed Table with 10 rows in 5 chunks:
+Ratio    Sum
+─────────────
+1.66667  8.0
+1.63333  7.9
+2.3913   7.8
+2.32143  9.3
+2.81818  8.4
+2.73913  8.6
+2.96154  10.3
+2.72727  8.2
+2.75     10.5
+2.64286  10.2
 ```
 
 

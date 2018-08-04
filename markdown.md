@@ -91,7 +91,7 @@ Each symbol gets replaced with the corresponding column:
 
 ```@example meta
 using Base.Test
-f(df) = @with df  :SepalLength
+f(df) = @with df :SepalLength
 @inferred f(iris)
 ```
 
@@ -99,7 +99,7 @@ f(df) = @with df  :SepalLength
 
 # Fast row iteration
 
-Replace each symbol with a reference to the respective field of a row:
+Apply a given expression row by row:
 
 ```@example meta
 @map iris :SepalLength/:SepalWidth
@@ -170,9 +170,10 @@ All these macros have curried versions and can be combined with vanilla Julia Ba
 @apply iris begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1]
+    _[1:2]
 end
 ```
+
 ---
 
 # Pipeline: grouping
@@ -180,10 +181,24 @@ end
 The pipeline has support for grouping:
 
 ```@example meta
-@apply iris :Species begin
+@apply iris :Species flatten=true begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1]
+    _[1:2]
+end
+```
+
+---
+
+# Pipeline: out of core
+
+And for out of core computations:
+
+```@example meta
+@applychunked iris5 begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:2]
 end
 ```
 

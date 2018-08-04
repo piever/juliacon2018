@@ -170,9 +170,10 @@ All these macros have curried versions and can be combined with vanilla Julia Ba
 @apply iris begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1]
+    _[1:2]
 end
 ```
+
 ---
 
 # Pipeline: grouping
@@ -180,10 +181,24 @@ end
 The pipeline has support for grouping:
 
 ```@example meta
-@apply iris :Species begin
+@apply iris :Species flatten=true begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1]
+    _[1:2]
+end
+```
+
+---
+
+# Pipeline: out of core
+
+And for out of core computations:
+
+```@example meta
+@applychunked iris5 begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:2]
 end
 ```
 
