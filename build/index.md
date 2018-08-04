@@ -20,28 +20,22 @@ Pietro Vertechi, JuliaCon 2018
 
 
 
-# Introduction
+# Outline
 
 
-  * The recent pure Julia library JuliaDB provides tool to store and manipulate tabular data, on a single or multiple processors.
-
-
---
-
-
-  * Using metaprogramming, one can make this package simpler to use.
+  * JuliaDBMeta: a pure Julia package (inspired on DataFramesMeta and Query) that uses metaprogramming to simplify operations on tabular data
 
 
 --
 
 
-  * JuliaDBMeta and StatPlots try to create a consistent DSL for dealing with tabular data, from data filtering and preprocessing to visualization
+  * Using metaprogramming, it is possible to pipe this data directly into the StatPlots package, for statistical visualizations
 
 
 --
 
 
-  * Thanks to the InteractBase package, it is possible to access this tool from a "hackable" and composable GUI
+  * Thanks to the InteractBase package, it is possible to access these tools from a "hackable" and composable GUI
 
 
 ---
@@ -49,15 +43,22 @@ Pietro Vertechi, JuliaCon 2018
 
 
 
-# JuliaDBMeta
+# Exploiting JuliaDB's technical advantages
 
 
-JuliaDBMeta is a set of macros to simplify data manipulation with JuliaDB, heavily inspired on DataFramesMeta. It exploits the technical advantages of JuliaDB:
+<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fully-typed tables with type stable column extraction     </div>     <p style="width: 6%; text-align:center;">         &rarr;     </p>     <div style="width: 47%;">         Allow the user to type a symbol explicitly and replace it with a column at macroexpand time     </div> </div> <div style="height: 1em;"></div>
 
 
-  * Fully typed tables with type stable column extraction
-  * Fast row iteration
-  * Parallel data storage and parallel computations
+--
+
+
+<div style="display: flex; orientation: row; justify-content:center">     <div style="width: 47%;">         Fast row iteration     </div>     <p style="width: 6%; text-align:center;">         &rarr;     </p>     <div style="width: 47%;">         From a user expression, detect which columns are needed and what anonymous function to run on each row     </div> </div> <div style="height: 1em;"></div>
+
+
+--
+
+
+<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Parallel data storage and parallel computations     </div>     <p style="width: 6%; text-align:center;">         &rarr;     </p>     <div style="width: 47%;">         Detect if user command can be parallelized automatically     </div> </div>
 
 
 ---
