@@ -11,7 +11,7 @@ Pietro Vertechi, JuliaCon 2018
 --
 - Using metaprogramming, it is possible to pipe this data directly into the StatPlots package, for statistical visualizations
 --
-- Thanks to the InteractBase package, it is possible to access these tools from a "hackable" and composable GUI
+- Thanks to the Interact and TableWidgets packages, it is possible to access these tools from a "hackable" and composable GUI
 
 ---
 # Exploiting JuliaDB's technical advantages
@@ -178,7 +178,7 @@ end
 
 # Pipeline: out of core
 
-We can use the same idea to run our pipeline in parallel on each cluster:
+We can use the same idea to run our pipeline in parallel (splitting by chunks on the various processors):
 
 ```@example meta
 @applychunked iris5 begin

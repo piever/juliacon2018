@@ -35,7 +35,7 @@ Pietro Vertechi, JuliaCon 2018
 --
 
 
-  * Thanks to the InteractBase package, it is possible to access these tools from a "hackable" and composable GUI
+  * Thanks to the Interact and TableWidgets packages, it is possible to access these tools from a "hackable" and composable GUI
 
 
 ---
@@ -398,7 +398,7 @@ Ratio    Sum
 # Pipeline: out of core
 
 
-We can use the same idea to run our pipeline in parallel on each cluster:
+We can use the same idea to run our pipeline in parallel (splitting by chunks on the various processors):
 
 
 ```julia
