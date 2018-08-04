@@ -156,7 +156,7 @@ Each symbol gets replaced with the corresponding column:
 
 ```julia
 using Base.Test
-f(df) = @with df  :SepalLength
+f(df) = @with df :SepalLength
 @inferred f(iris)
 ```
 
@@ -193,7 +193,7 @@ f(df) = @with df  :SepalLength
 # Fast row iteration
 
 
-Replace each symbol with a reference to the respective field of a row:
+Apply a given expression row by row:
 
 
 ```julia
@@ -309,7 +309,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species      Ratio
 # Fast row iteration: examples
 
 
-The same trick can be used to add a new column:
+The same trick can be used to add or modify a column:
 
 
 ```julia
@@ -370,7 +370,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 # Pipeline
 
 
-All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
+To understand out-of-core support in JuliaDBMeta we need to digress and look at the concept of a pipeline: a sequence of JuliaDBMeta macros or normal Julia / JuliaDB function.
 
 
 ```julia
@@ -395,42 +395,10 @@ Ratio    Sum
 
 
 
-# Pipeline: grouping
-
-
-The pipeline has support for grouping:
-
-
-```julia
-@apply iris :Species flatten=true begin
-    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
-    sort(_, :Ratio, rev = true)
-    _[1:2]
-end
-```
-
-```
-Table with 6 rows, 3 columns:
-Species       Ratio    Sum
-───────────────────────────
-"setosa"      1.95652  6.8
-"setosa"      1.66667  8.0
-"versicolor"  2.81818  8.4
-"versicolor"  2.73913  8.6
-"virginica"   2.96154  10.3
-"virginica"   2.75     10.5
-```
-
-
----
-
-
-
-
 # Pipeline: out of core
 
 
-And for out of core computations:
+We can use the same idea to run our pipeline in parallel on each cluster:
 
 
 ```julia
@@ -463,6 +431,38 @@ Ratio    Sum
 
 
 
+# Pipeline: grouping
+
+
+The same trick can also be used to analyze grouped data:
+
+
+```julia
+@apply iris :Species flatten=true begin
+    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:2]
+end
+```
+
+```
+Table with 6 rows, 3 columns:
+Species       Ratio    Sum
+───────────────────────────
+"setosa"      1.95652  6.8
+"setosa"      1.66667  8.0
+"versicolor"  2.81818  8.4
+"versicolor"  2.73913  8.6
+"virginica"   2.96154  10.3
+"virginica"   2.75     10.5
+```
+
+
+---
+
+
+
+
 # Pipeline: plotting
 
 
@@ -473,9 +473,12 @@ The pipeline has support for plotting via StatPlots and the `@df` macro:
 using StatPlots
 @apply iris begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
-    @df scatter(:Ratio, :Sum, smooth = true)
+    @df corrplot([:Ratio :Sum])
 end
 ```
+
+
+![](../corrplot.svg)
 
 
 ---

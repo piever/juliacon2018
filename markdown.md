@@ -137,7 +137,7 @@ The same trick can be used to add a new column:
 
 # Fast row iteration: examples
 
-The same trick can be used to add a new column:
+The same trick can be used to add or modify a column:
 
 ```julia
 @transform iris {Ratio = :SepalLength/:SepalWidth}
@@ -164,7 +164,7 @@ iris5 = table(iris, chunks = 5)
 
 # Pipeline
 
-All these macros have curried versions and can be combined with vanilla Julia Base or JuliaDB functions in a shared pipeline:
+To understand out-of-core support in JuliaDBMeta we need to digress and look at the concept of a pipeline: a sequence of JuliaDBMeta macros or normal Julia / JuliaDB function.
 
 ```@example meta
 @apply iris begin
@@ -176,12 +176,12 @@ end
 
 ---
 
-# Pipeline: grouping
+# Pipeline: out of core
 
-The pipeline has support for grouping:
+We can use the same idea to run our pipeline in parallel on each cluster:
 
 ```@example meta
-@apply iris :Species flatten=true begin
+@applychunked iris5 begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
     _[1:2]
@@ -190,12 +190,12 @@ end
 
 ---
 
-# Pipeline: out of core
+# Pipeline: grouping
 
-And for out of core computations:
+The same trick can also be used to analyze grouped data:
 
 ```@example meta
-@applychunked iris5 begin
+@apply iris :Species flatten=true begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
     _[1:2]
@@ -212,9 +212,10 @@ The pipeline has support for plotting via StatPlots and the `@df` macro:
 using StatPlots
 @apply iris begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
-    @df scatter(:Ratio, :Sum, smooth = true)
+    @df corrplot([:Ratio :Sum])
 end
 ```
+![](../corrplot.svg)
 
 ---
 
