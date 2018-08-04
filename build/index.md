@@ -111,7 +111,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Type stable column extraction: column-wise macros
+# Type stable column extraction
 
 
 Each symbol gets replaced with the corresponding column:
@@ -151,7 +151,7 @@ Each symbol gets replaced with the corresponding column:
 
 
 
-# Type stable column extraction: column-wise macros
+# Type stable column extraction
 
 
 ```julia
@@ -190,7 +190,7 @@ f(df) = @with df  :SepalLength
 
 
 
-# Fast row iteration: row-wise macros
+# Fast row iteration
 
 
 Replace each symbol with a reference to the respective field of a row:
@@ -230,7 +230,7 @@ Replace each symbol with a reference to the respective field of a row:
 
 
 
-# Row-wise macros: under the hood
+# Fast row iteration: under the hood
 
 
 ```julia
@@ -266,7 +266,7 @@ map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth
 
 
 
-# Row-wise macros: examples
+# Fast row iteration: examples
 
 
 The same trick can be used to add a new column:
@@ -306,7 +306,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species      Ratio
 
 
 
-# Row-wise macros: examples
+# Fast row iteration: examples
 
 
 The same trick can be used to add a new column:
@@ -340,7 +340,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Row-wise macros: out-of-core
+# Fast row iteration: out-of-core
 
 
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
