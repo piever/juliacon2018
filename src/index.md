@@ -17,29 +17,38 @@ g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 # Exploiting JuliaDB's technical advantages
 
 <div style="display: flex; orientation: row;">
-    <div style="width: 47%;">
-        Fully-typed tables with type stable column extraction
+    <div style="width: 47%; text-align:center;">
+        <strong>JuliaDB</strong>
     </div>
-    <p style="width: 6%; text-align:center;">
-        &rarr;
-    </p>
-    <div style="width: 47%;">
-        Allow the user to type a symbol explicitly and replace it with a column at macroexpand time
+    <div style="width: 6%;"></div>
+    <div style="width: 47%; text-align:center;">
+        <strong>JuliaDBMeta</strong>
     </div>
 </div>
 <div style="height: 1em;"></div>
 
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 
-<div style="display: flex; orientation: row; justify-content:center">
+<div style="display: flex; orientation: row;">
+    <div style="width: 47%;">
+        Fully-typed tables with type stable column extraction
+    </div>
+    <div style="width: 6%;"></div>
+    <div style="width: 47%;">
+        Replace symbols with respective column at macroexpand time
+    </div>
+</div>
+<div style="height: 1em;"></div>
+
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+
+<div style="display: flex; orientation: row;">
     <div style="width: 47%;">
         Fast row iteration
     </div>
-    <p style="width: 6%; text-align:center;">
-        &rarr;
-    </p>
+    <div style="width: 6%;"></div>
     <div style="width: 47%;">
-        From a user expression, detect which columns are needed and what anonymous function to run on each row
+        Detect necessary variables and anonymous function
     </div>
 </div>
 <div style="height: 1em;"></div>
@@ -50,9 +59,7 @@ g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
     <div style="width: 47%;">
         Parallel data storage and parallel computations
     </div>
-    <p style="width: 6%; text-align:center;">
-        &rarr;
-    </p>
+    <div style="width: 6%;"></div>
     <div style="width: 47%;">
         Detect if user command can be parallelized automatically
     </div>

@@ -17,14 +17,25 @@ Pietro Vertechi, JuliaCon 2018
 # Exploiting JuliaDB's technical advantages
 
 <div style="display: flex; orientation: row;">
+    <div style="width: 47%; text-align:center;">
+        <strong>JuliaDB</strong>
+    </div>
+    <div style="width: 6%;"></div>
+    <div style="width: 47%; text-align:center;">
+        <strong>JuliaDBMeta</strong>
+    </div>
+</div>
+<div style="height: 1em;"></div>
+
+--
+
+<div style="display: flex; orientation: row;">
     <div style="width: 47%;">
         Fully-typed tables with type stable column extraction
     </div>
-    <p style="width: 6%; text-align:center;">
-        &rarr;
-    </p>
+    <div style="width: 6%;"></div>
     <div style="width: 47%;">
-        Allow the user to type a symbol explicitly and replace it with a column at macroexpand time
+        Replace symbols with respective column at macroexpand time
     </div>
 </div>
 <div style="height: 1em;"></div>
@@ -35,11 +46,9 @@ Pietro Vertechi, JuliaCon 2018
     <div style="width: 47%;">
         Fast row iteration
     </div>
-    <p style="width: 6%; text-align:center;">
-        &rarr;
-    </p>
+    <div style="width: 6%;"></div>
     <div style="width: 47%;">
-        From a user expression, detect which columns are needed and what anonymous function to run on each row
+        Detect necessary variables and anonymous function
     </div>
 </div>
 <div style="height: 1em;"></div>
@@ -50,9 +59,7 @@ Pietro Vertechi, JuliaCon 2018
     <div style="width: 47%;">
         Parallel data storage and parallel computations
     </div>
-    <p style="width: 6%; text-align:center;">
-        &rarr;
-    </p>
+    <div style="width: 6%;"></div>
     <div style="width: 47%;">
         Detect if user command can be parallelized automatically
     </div>
