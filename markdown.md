@@ -164,7 +164,7 @@ iris5 = table(iris, chunks = 5)
 
 # Pipeline
 
-To understand out-of-core support in JuliaDBMeta we need to digress and look at the concept of a pipeline: a sequence of JuliaDBMeta macros or normal Julia / JuliaDB function.
+To understand out-of-core support in JuliaDBMeta we need to digress and look at the concept of a pipeline: a sequence of JuliaDBMeta macros or normal Julia / JuliaDB functions.
 
 ```@example meta
 @apply iris begin
@@ -221,4 +221,17 @@ end
 
 # Interactivity
 
-The [InteractBase](https://github.com/piever/InteractBase.jl/) package allows the creation of interactive user interfaces based on JuliaDBMeta and StatPlots.
+The [Interact](https://github.com/JuliaGizmos/Interact.jl) and [TableWidgets](https://github.com/piever/TableWidgets.jl) package allows the creation of interactive user interfaces based on JuliaDBMeta and StatPlots:
+
+<iframe src="../pipeline.mp4" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
+
+---
+
+# Acknowledgments
+
+- The JuliaPlots organization (where I started contributing to the Julia package ecosystem) for patiently guiding me through my first PRs
+
+- My GSoC mentor Shashi Gowda for his help both on JuliaDB and on the interactive apps
+
+- The JuliaCon organizers
