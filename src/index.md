@@ -77,7 +77,27 @@ iris = loadtable(filepath)
 
 ---
 
-# Row-wise macros
+# Type stable column extraction: column-wise macros
+
+Each symbol gets replaced with the corresponding column:
+
+```@example meta
+@with iris :SepalLength .* :SepalWidth ./ mean(:SepalWidth)
+```
+
+---
+
+# Type stable column extraction: column-wise macros
+
+```@example meta
+using Base.Test
+f(df) = @with df  :SepalLength
+@inferred f(iris)
+```
+
+---
+
+# Fast row iteration: row-wise macros
 
 Replace each symbol with a reference to the respective field of a row:
 
@@ -138,17 +158,6 @@ As each row-wise macro implements a local computation, it will be parallelized o
 ```@example meta
 iris5 = table(iris, chunks = 5)
 @where iris5 :SepalLength == 4.9 && :Species == "setosa"
-```
-
----
-
-# Column-wise macros
-
-Very similar to row-wise macros, but they act on columns (each symbol gets replaced with the corresponding column). Useful when the whole column is needed:
-
-```@example meta
-using StatsBase
-@where_vec iris :SepalLength .> quantile(:SepalLength, 0.95)
 ```
 
 ---

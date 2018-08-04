@@ -111,7 +111,86 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Row-wise macros
+# Type stable column extraction: column-wise macros
+
+
+Each symbol gets replaced with the corresponding column:
+
+
+```julia
+@with iris :SepalLength .* :SepalWidth ./ mean(:SepalWidth)
+```
+
+```
+150-element Array{Float64,1}:
+ 5.83842
+ 4.80811
+ 4.91932
+ 4.6642
+ 5.88748
+ 6.88836
+ 5.11557
+ 5.5604
+ 4.17357
+ 4.96838
+ ⋮
+ 6.99629
+ 5.12211
+ 7.11731
+ 7.23179
+ 6.57436
+ 5.15155
+ 6.37811
+ 6.8949
+ 5.78936
+```
+
+
+---
+
+
+
+
+# Type stable column extraction: column-wise macros
+
+
+```julia
+using Base.Test
+f(df) = @with df  :SepalLength
+@inferred f(iris)
+```
+
+```
+150-element Array{Float64,1}:
+ 5.1
+ 4.9
+ 4.7
+ 4.6
+ 5.0
+ 5.4
+ 4.6
+ 5.0
+ 4.4
+ 4.9
+ ⋮
+ 6.9
+ 5.8
+ 6.8
+ 6.7
+ 6.7
+ 6.3
+ 6.5
+ 6.2
+ 5.9
+```
+
+
+---
+
+
+
+
+# Fast row iteration: row-wise macros
 
 
 Replace each symbol with a reference to the respective field of a row:
@@ -280,37 +359,6 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 4.9          3.1         1.5          0.1         "setosa"
 4.9          3.1         1.5          0.2         "setosa"
 4.9          3.6         1.4          0.1         "setosa"
-```
-
-
----
-
-
-
-
-# Column-wise macros
-
-
-Very similar to row-wise macros, but they act on columns (each symbol gets replaced with the corresponding column). Useful when the whole column is needed:
-
-
-```julia
-using StatsBase
-@where_vec iris :SepalLength .> quantile(:SepalLength, 0.95)
-```
-
-```
-Table with 8 rows, 5 columns:
-SepalLength  SepalWidth  PetalLength  PetalWidth  Species
-─────────────────────────────────────────────────────────────
-7.6          3.0         6.6          2.1         "virginica"
-7.3          2.9         6.3          1.8         "virginica"
-7.7          3.8         6.7          2.2         "virginica"
-7.7          2.6         6.9          2.3         "virginica"
-7.7          2.8         6.7          2.0         "virginica"
-7.4          2.8         6.1          1.9         "virginica"
-7.9          3.8         6.4          2.0         "virginica"
-7.7          3.0         6.1          2.3         "virginica"
 ```
 
 
