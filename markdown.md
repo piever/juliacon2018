@@ -7,11 +7,11 @@ Pietro Vertechi, JuliaCon 2018
 
 # Outline
 
-- JuliaDBMeta: a pure Julia package (inspired on DataFramesMeta and Query) that uses metaprogramming to simplify operations on tabular data
+- JuliaDBMeta: a pure Julia package (inspired on DataFramesMeta and Query) that provides a set of macros to simplify operations on tabular data
 --
-- Using metaprogramming, it is possible to pipe this data directly into the StatPlots package, for statistical visualizations
+- using StatPlots, it is possible to include statistical visualizations in a JuliaDBMeta pipeline
 --
-- Thanks to the Interact and TableWidgets packages, it is possible to access these tools from a "hackable" and composable GUI
+- Interact and TableWidgets packages allow to run these manipulations and visualizations from a "hackable" and composable GUI
 
 ---
 # Exploiting JuliaDB's technical advantages
@@ -31,11 +31,11 @@ Pietro Vertechi, JuliaCon 2018
 
 <div style="display: flex; orientation: row;">
     <div style="width: 47%;">
-        Fully-typed tables with type stable column extraction
+        Fully-typed tables
     </div>
     <div style="width: 6%;"></div>
     <div style="width: 47%;">
-        Replace symbols with respective column at macroexpand time
+        Replace symbols with respective column in a type-inferrable way
     </div>
 </div>
 <div style="height: 1em;"></div>
