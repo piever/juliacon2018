@@ -23,19 +23,19 @@ Pietro Vertechi, JuliaCon 2018
 # Outline
 
 
-  * JuliaDBMeta: a pure Julia package (inspired on DataFramesMeta and Query) that provides a set of macros to simplify operations on tabular data
+  * **JuliaDBMeta**: a pure Julia package (inspired on DataFramesMeta and Query) that provides a set of macros to simplify operations on tabular data
 
 
 --
 
 
-  * using StatPlots, it is possible to include statistical visualizations in a JuliaDBMeta pipeline
+  * JuliaDBMeta pipeline: JuliaDBMeta operations can be concatenated and then piped into a **StatPlots**-powered statistical visualization
 
 
 --
 
 
-  * Interact and TableWidgets packages allow to run these manipulations and visualizations from a "hackable" and composable GUI
+  * **Interact** package allows to run these manipulations and visualizations from a "hackable" and composable GUI
 
 
 ---
@@ -52,13 +52,13 @@ Pietro Vertechi, JuliaCon 2018
 --
 
 
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fully-typed tables     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Replace symbols with respective column in a type-inferrable way     </div> </div> <div style="height: 1em;"></div>
+<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fully-typed tables     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Replace symbols with respective columns in a type-inferrable way     </div> </div> <div style="height: 1em;"></div>
 
 
 --
 
 
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fast row iteration     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect necessary variables and anonymous function     </div> </div> <div style="height: 1em;"></div>
+<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fast row iteration &rarr; execute a function row by row materializing only the necessary fields of the dataset     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect anonymous function and necessary fields     </div> </div> <div style="height: 1em;"></div>
 
 
 --
@@ -321,17 +321,19 @@ or to select data:
 
 
 ```julia
-@where iris :SepalLength == 4.9 && :Species == "setosa"
+@where iris :SepalLength == 4.9
 ```
 
 ```
-Table with 4 rows, 5 columns:
+Table with 6 rows, 5 columns:
 SepalLength  SepalWidth  PetalLength  PetalWidth  Species
-──────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────
 4.9          3.0         1.4          0.2         "setosa"
 4.9          3.1         1.5          0.1         "setosa"
 4.9          3.1         1.5          0.2         "setosa"
 4.9          3.6         1.4          0.1         "setosa"
+4.9          2.4         3.3          1.0         "versicolor"
+4.9          2.5         4.5          1.7         "virginica"
 ```
 
 
@@ -347,18 +349,20 @@ As each row-wise macro implements a local computation, it will be parallelized o
 
 
 ```julia
-iris5 = table(iris, chunks = 5)
-@where iris5 :SepalLength == 4.9 && :Species == "setosa"
+iris2 = table(iris, chunks = 2)
+@where iris2 :SepalLength == 4.9
 ```
 
 ```
-Distributed Table with 4 rows in 2 chunks:
+Distributed Table with 6 rows in 2 chunks:
 SepalLength  SepalWidth  PetalLength  PetalWidth  Species
-──────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────
 4.9          3.0         1.4          0.2         "setosa"
 4.9          3.1         1.5          0.1         "setosa"
 4.9          3.1         1.5          0.2         "setosa"
 4.9          3.6         1.4          0.1         "setosa"
+4.9          2.4         3.3          1.0         "versicolor"
+4.9          2.5         4.5          1.7         "virginica"
 ```
 
 
@@ -377,16 +381,17 @@ To understand out-of-core support in JuliaDBMeta we need to digress and look at 
 @apply iris begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1:2]
+    _[1:3]
 end
 ```
 
 ```
-Table with 2 rows, 2 columns:
+Table with 3 rows, 2 columns:
 Ratio    Sum
 ─────────────
 2.96154  10.3
 2.81818  8.4
+2.75     10.5
 ```
 
 
@@ -402,27 +407,23 @@ We can use the same idea to run our pipeline in parallel (splitting by chunks on
 
 
 ```julia
-@applychunked iris5 begin
+@applychunked iris2 begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1:2]
+    _[1:3]
 end
 ```
 
 ```
-Distributed Table with 10 rows in 5 chunks:
+Distributed Table with 6 rows in 2 chunks:
 Ratio    Sum
 ─────────────
-1.66667  8.0
-1.63333  7.9
-2.3913   7.8
-2.32143  9.3
 2.81818  8.4
-2.73913  8.6
-2.96154  10.3
 2.72727  8.2
+2.52     8.8
+2.96154  10.3
 2.75     10.5
-2.64286  10.2
+2.73913  8.6
 ```
 
 
@@ -441,20 +442,23 @@ The same trick can also be used to analyze grouped data:
 @apply iris :Species flatten=true begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1:2]
+    _[1:3]
 end
 ```
 
 ```
-Table with 6 rows, 3 columns:
+Table with 9 rows, 3 columns:
 Species       Ratio    Sum
 ───────────────────────────
 "setosa"      1.95652  6.8
 "setosa"      1.66667  8.0
+"setosa"      1.63333  7.9
 "versicolor"  2.81818  8.4
 "versicolor"  2.73913  8.6
+"versicolor"  2.72727  8.2
 "virginica"   2.96154  10.3
 "virginica"   2.75     10.5
+"virginica"   2.72727  8.2
 ```
 
 

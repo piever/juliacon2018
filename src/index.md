@@ -7,13 +7,14 @@ Pietro Vertechi, JuliaCon 2018
 
 # Outline
 
-- JuliaDBMeta: a pure Julia package (inspired on DataFramesMeta and Query) that provides a set of macros to simplify operations on tabular data
+- **JuliaDBMeta**: a pure Julia package (inspired on DataFramesMeta and Query) that provides a set of macros to simplify operations on tabular data
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- using StatPlots, it is possible to include statistical visualizations in a JuliaDBMeta pipeline
+- JuliaDBMeta pipeline: JuliaDBMeta operations can be concatenated and then piped into a **StatPlots**-powered statistical visualization
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- Interact and TableWidgets packages allow to run these manipulations and visualizations from a "hackable" and composable GUI
+- **Interact** package allows to run these manipulations and visualizations from a "hackable" and composable GUI
 
 ---
+
 # Exploiting JuliaDB's technical advantages
 
 <div style="display: flex; orientation: row;">
@@ -35,7 +36,7 @@ g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
     </div>
     <div style="width: 6%;"></div>
     <div style="width: 47%;">
-        Replace symbols with respective column in a type-inferrable way
+        Replace symbols with respective columns in a type-inferrable way
     </div>
 </div>
 <div style="height: 1em;"></div>
@@ -44,11 +45,11 @@ g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 
 <div style="display: flex; orientation: row;">
     <div style="width: 47%;">
-        Fast row iteration
+        Fast row iteration &rarr; execute a function row by row materializing only the necessary fields of the dataset
     </div>
     <div style="width: 6%;"></div>
     <div style="width: 47%;">
-        Detect necessary variables and anonymous function
+        Detect anonymous function and necessary fields
     </div>
 </div>
 <div style="height: 1em;"></div>
@@ -146,7 +147,7 @@ The same trick can be used to add or modify a column:
 or to select data:
 
 ```@example meta
-@where iris :SepalLength == 4.9 && :Species == "setosa"
+@where iris :SepalLength == 4.9
 ```
 
 ---
@@ -156,8 +157,8 @@ or to select data:
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
 
 ```@example meta
-iris5 = table(iris, chunks = 5)
-@where iris5 :SepalLength == 4.9 && :Species == "setosa"
+iris2 = table(iris, chunks = 2)
+@where iris2 :SepalLength == 4.9
 ```
 
 ---
@@ -170,7 +171,7 @@ To understand out-of-core support in JuliaDBMeta we need to digress and look at 
 @apply iris begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1:2]
+    _[1:3]
 end
 ```
 
@@ -181,10 +182,10 @@ end
 We can use the same idea to run our pipeline in parallel (splitting by chunks on the various processors):
 
 ```@example meta
-@applychunked iris5 begin
+@applychunked iris2 begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1:2]
+    _[1:3]
 end
 ```
 
@@ -198,7 +199,7 @@ The same trick can also be used to analyze grouped data:
 @apply iris :Species flatten=true begin
     @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
     sort(_, :Ratio, rev = true)
-    _[1:2]
+    _[1:3]
 end
 ```
 
