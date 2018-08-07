@@ -113,31 +113,11 @@ Simplest example is `@with`: each symbol gets replaced with the corresponding co
 
 
 ```julia
-@with iris :SepalLength .* :SepalWidth ./ mean(:SepalWidth)
+@with iris mean(:SepalLength) / mean(:SepalWidth)
 ```
 
 ```
-150-element Array{Float64,1}:
- 5.83842
- 4.80811
- 4.91932
- 4.6642
- 5.88748
- 6.88836
- 5.11557
- 5.5604
- 4.17357
- 4.96838
- ⋮
- 6.99629
- 5.12211
- 7.11731
- 7.23179
- 6.57436
- 5.15155
- 6.37811
- 6.8949
- 5.78936
+1.911251635412124
 ```
 
 
@@ -146,7 +126,7 @@ Simplest example is `@with`: each symbol gets replaced with the corresponding co
 
 
 
-# Type stability
+# Column-wise macros: type inferrability
 
 
 ```julia
@@ -188,7 +168,7 @@ f(df) = @with df :SepalLength
 # Row-wise macros
 
 
-Simplest example is `@map`: apply a given expression row by row:
+Simplest example is `@map`: apply a given expression row by row.
 
 
 ```julia

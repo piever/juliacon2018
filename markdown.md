@@ -41,12 +41,12 @@ iris = loadtable(filepath)
 Simplest example is `@with`: each symbol gets replaced with the corresponding column.
 
 ```@example meta
-@with iris :SepalLength .* :SepalWidth ./ mean(:SepalWidth)
+@with iris mean(:SepalLength) / mean(:SepalWidth)
 ```
 
 ---
 
-# Type stability
+# Column-wise macros: type inferrability
 
 ```@example meta
 using Base.Test
@@ -58,7 +58,7 @@ f(df) = @with df :SepalLength
 
 # Row-wise macros
 
-Simplest example is `@map`: apply a given expression row by row:
+Simplest example is `@map`: apply a given expression row by row.
 
 ```@example meta
 @map iris :SepalLength/:SepalWidth
