@@ -5,13 +5,15 @@ Pietro Vertechi, JuliaCon 2018
 
 ---
 
-# Outline
-
-- **JuliaDBMeta**, a package inspired on DataFramesMeta and Query and built on top of JuliaDB, provides a set of macros to manipulate tabular data (filter, transform, split-apply-combine, etc...)
+# What is JuliaDBMeta?
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- JuliaDBMeta operations can be concatenated, mixing and matching with external packages for manipulating, visualizing or saving data: examples of integration with Query, VegaLite and StatPlots
+- JuliaDBMeta macros (inspired on DataFramesMeta and Query) allow to use the JuliaDB library for table manipulations with a simplified syntax
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- **Interact** package allows to run these manipulations and visualizations from a "hackable" and composable GUI
+- JuliaDBMeta operations can be concatenated, mixing and matching with external packages, to create a data analysis pipeline (both in memory and out-of-core)
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+- JuliaDBMeta pipelines integrate smoothly with several plotting libraries (VegaLite, StatPlots, Gadfly)
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+- the new Interact package allows to run these manipulations and visualizations from a "hackable" and composable GUI
 
 ---
 
