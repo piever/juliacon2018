@@ -236,6 +236,12 @@ map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth
 ```
 
 
+--
+
+
+Very important for performance in tables with many columns, as we avoid materializing unnecessary fields!
+
+
 ---
 
 
@@ -480,7 +486,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
 # Pipeline: plotting
 
 
-The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
 
 
 ```julia
@@ -503,7 +509,7 @@ end
 # Pipeline: plotting
 
 
-The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
 
 
 ```julia

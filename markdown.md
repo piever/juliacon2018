@@ -82,6 +82,10 @@ Simplest example is `@map`: apply a given expression row by row.
 map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth))
 ```
 
+--
+
+Very important for performance in tables with many columns, as we avoid materializing unnecessary fields!
+
 ---
 
 # Row-wise macros: examples
@@ -182,7 +186,7 @@ end
 
 # Pipeline: plotting
 
-The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
 
 ```julia
 using StatPlots
@@ -197,7 +201,7 @@ end
 
 # Pipeline: plotting
 
-The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
 
 ```julia
 using VegaLite
