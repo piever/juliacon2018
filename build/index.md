@@ -23,13 +23,13 @@ Pietro Vertechi, JuliaCon 2018
 # Outline
 
 
-  * **JuliaDBMeta**: a pure Julia package (inspired on DataFramesMeta and Query) that provides a set of macros to simplify operations on tabular data
+  * **JuliaDBMeta**, a package inspired on DataFramesMeta and Query and built on top of JuliaDB, provides a set of macros to manipulate tabular data (filter, transform, split-apply-combine, etc...)
 
 
 --
 
 
-  * JuliaDBMeta pipeline: JuliaDBMeta operations can be concatenated and then piped into a **StatPlots**-powered statistical visualization
+  * JuliaDBMeta operations can be concatenated and the result can then be piped into a **StatPlots**-powered statistical visualization
 
 
 --
@@ -43,7 +43,7 @@ Pietro Vertechi, JuliaCon 2018
 
 
 
-# Exploiting JuliaDB's technical advantages
+# Exploiting JuliaDB's features
 
 
 <div style="display: flex; orientation: row;">     <div style="width: 47%; text-align:center;">         <strong>JuliaDB</strong>     </div>     <div style="width: 6%;"></div>     <div style="width: 47%; text-align:center;">         <strong>JuliaDBMeta</strong>     </div> </div> <div style="height: 1em;"></div>
@@ -58,7 +58,7 @@ Pietro Vertechi, JuliaCon 2018
 --
 
 
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fast row iteration &rarr; execute a function row by row materializing only the necessary fields of the dataset     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect anonymous function and necessary fields     </div> </div> <div style="height: 1em;"></div>
+<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fast row iteration &rarr; efficiently execute a function row by row (specifying which fields to materialize while iterating)     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect anonymous function and necessary fields     </div> </div> <div style="height: 1em;"></div>
 
 
 --
@@ -269,7 +269,7 @@ map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth
 # Fast row iteration: examples
 
 
-The same trick can be used to add a new column:
+The same trick can be used to add or modify one or more columns:
 
 
 ```julia
@@ -309,7 +309,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species      Ratio
 # Fast row iteration: examples
 
 
-The same trick can be used to add or modify a column:
+The same trick can be used to add or modify one or more columns:
 
 
 ```julia
@@ -374,24 +374,24 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 # Pipeline
 
 
-To understand out-of-core support in JuliaDBMeta we need to digress and look at the concept of a pipeline: a sequence of JuliaDBMeta macros or normal Julia / JuliaDB functions.
+Using `@apply` we can create a pipeline, i.e. a sequence of JuliaDBMeta macros or normal Julia / JuliaDB functions.
 
 
 ```julia
 @apply iris begin
-    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
     sort(_, :Ratio, rev = true)
     _[1:3]
 end
 ```
 
 ```
-Table with 3 rows, 2 columns:
-Ratio    Sum
-─────────────
-2.96154  10.3
-2.81818  8.4
-2.75     10.5
+Table with 3 rows, 7 columns:
+SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
+─────────────────────────────────────────────────────────────────────────────
+7.7          2.6         6.9          2.3         "virginica"   2.96154  10.3
+6.2          2.2         4.5          1.5         "versicolor"  2.81818  8.4
+7.7          2.8         6.7          2.0         "virginica"   2.75     10.5
 ```
 
 
@@ -403,12 +403,12 @@ Ratio    Sum
 # Pipeline: out of core
 
 
-We can use the same idea to run our pipeline in parallel (splitting by chunks on the various processors):
+We can run our pipeline in parallel, splitting by chunks on the various processors:
 
 
 ```julia
 @applychunked iris2 begin
-    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
     sort(_, :Ratio, rev = true)
     _[1:3]
 end
@@ -416,14 +416,14 @@ end
 
 ```
 Distributed Table with 6 rows in 2 chunks:
-Ratio    Sum
-─────────────
-2.81818  8.4
-2.72727  8.2
-2.52     8.8
-2.96154  10.3
-2.75     10.5
-2.73913  8.6
+SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
+─────────────────────────────────────────────────────────────────────────────
+6.2          2.2         4.5          1.5         "versicolor"  2.81818  8.4
+6.0          2.2         4.0          1.0         "versicolor"  2.72727  8.2
+6.3          2.5         4.9          1.5         "versicolor"  2.52     8.8
+7.7          2.6         6.9          2.3         "virginica"   2.96154  10.3
+7.7          2.8         6.7          2.0         "virginica"   2.75     10.5
+6.3          2.3         4.4          1.3         "versicolor"  2.73913  8.6
 ```
 
 
@@ -432,33 +432,33 @@ Ratio    Sum
 
 
 
-# Pipeline: grouping
+# Pipeline: split-apply-combine
 
 
-The same trick can also be used to analyze grouped data:
+Or splitting by some grouping variable:
 
 
 ```julia
 @apply iris :Species flatten=true begin
-    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength + :SepalWidth}
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
     sort(_, :Ratio, rev = true)
     _[1:3]
 end
 ```
 
 ```
-Table with 9 rows, 3 columns:
-Species       Ratio    Sum
-───────────────────────────
-"setosa"      1.95652  6.8
-"setosa"      1.66667  8.0
-"setosa"      1.63333  7.9
-"versicolor"  2.81818  8.4
-"versicolor"  2.73913  8.6
-"versicolor"  2.72727  8.2
-"virginica"   2.96154  10.3
-"virginica"   2.75     10.5
-"virginica"   2.72727  8.2
+Table with 9 rows, 7 columns:
+Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
+─────────────────────────────────────────────────────────────────────────────
+"setosa"      4.5          2.3         1.3          0.3         1.95652  6.8
+"setosa"      5.0          3.0         1.6          0.2         1.66667  8.0
+"setosa"      4.9          3.0         1.4          0.2         1.63333  7.9
+"versicolor"  6.2          2.2         4.5          1.5         2.81818  8.4
+"versicolor"  6.3          2.3         4.4          1.3         2.73913  8.6
+"versicolor"  6.0          2.2         4.0          1.0         2.72727  8.2
+"virginica"   7.7          2.6         6.9          2.3         2.96154  10.3
+"virginica"   7.7          2.8         6.7          2.0         2.75     10.5
+"virginica"   6.0          2.2         5.0          1.5         2.72727  8.2
 ```
 
 
@@ -476,7 +476,7 @@ The pipeline has support for plotting via StatPlots and the `@df` macro:
 ```julia
 using StatPlots
 @apply iris begin
-    @map {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
     @df corrplot([:Ratio :Sum])
 end
 ```
