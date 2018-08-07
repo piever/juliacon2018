@@ -29,7 +29,7 @@ Pietro Vertechi, JuliaCon 2018
 --
 
 
-  * JuliaDBMeta operations can be concatenated and the result can then be piped into a **StatPlots**-powered statistical visualization
+  * JuliaDBMeta operations can be concatenated, mixing and matching with external packages for manipulating, visualizing or saving data: examples of integration with Query, VegaLite and StatPlots
 
 
 --
@@ -400,6 +400,41 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
 
 
 
+# Pipeline: split-apply-combine
+
+
+Sometimes the data is naturally divided into groups (for example the different `Species` of our dataset) and we may wish to apply the pipeline separately on each group
+
+
+```julia
+@apply iris :Species flatten=true begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:3]
+end
+```
+
+```
+Table with 9 rows, 7 columns:
+Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
+─────────────────────────────────────────────────────────────────────────────
+"setosa"      4.5          2.3         1.3          0.3         1.95652  6.8
+"setosa"      5.0          3.0         1.6          0.2         1.66667  8.0
+"setosa"      4.9          3.0         1.4          0.2         1.63333  7.9
+"versicolor"  6.2          2.2         4.5          1.5         2.81818  8.4
+"versicolor"  6.3          2.3         4.4          1.3         2.73913  8.6
+"versicolor"  6.0          2.2         4.0          1.0         2.72727  8.2
+"virginica"   7.7          2.6         6.9          2.3         2.96154  10.3
+"virginica"   7.7          2.8         6.7          2.0         2.75     10.5
+"virginica"   6.0          2.2         5.0          1.5         2.72727  8.2
+```
+
+
+---
+
+
+
+
 # Pipeline: out of core
 
 
@@ -432,33 +467,33 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
 
 
 
-# Pipeline: split-apply-combine
+# Pipeline: out of core Query support
 
 
-Or splitting by some grouping variable:
+The functions in the `@applychunked` pipeline are run on normal in-memory table chunks, so one can put anything that works for in-memory tables (e.g Query operators).
 
 
 ```julia
-@apply iris :Species flatten=true begin
+import Query
+
+@applychunked iris2 begin
     @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
-    sort(_, :Ratio, rev = true)
-    _[1:3]
+    Query.@orderby_descending(_.Ratio)
+    Query.@take(3)
+    table
 end
 ```
 
 ```
-Table with 9 rows, 7 columns:
-Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
+Distributed Table with 6 rows in 2 chunks:
+SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
 ─────────────────────────────────────────────────────────────────────────────
-"setosa"      4.5          2.3         1.3          0.3         1.95652  6.8
-"setosa"      5.0          3.0         1.6          0.2         1.66667  8.0
-"setosa"      4.9          3.0         1.4          0.2         1.63333  7.9
-"versicolor"  6.2          2.2         4.5          1.5         2.81818  8.4
-"versicolor"  6.3          2.3         4.4          1.3         2.73913  8.6
-"versicolor"  6.0          2.2         4.0          1.0         2.72727  8.2
-"virginica"   7.7          2.6         6.9          2.3         2.96154  10.3
-"virginica"   7.7          2.8         6.7          2.0         2.75     10.5
-"virginica"   6.0          2.2         5.0          1.5         2.72727  8.2
+6.2          2.2         4.5          1.5         "versicolor"  2.81818  8.4
+6.0          2.2         4.0          1.0         "versicolor"  2.72727  8.2
+6.3          2.5         4.9          1.5         "versicolor"  2.52     8.8
+7.7          2.6         6.9          2.3         "virginica"   2.96154  10.3
+7.7          2.8         6.7          2.0         "virginica"   2.75     10.5
+6.3          2.3         4.4          1.3         "versicolor"  2.73913  8.6
 ```
 
 
@@ -470,7 +505,7 @@ Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
 # Pipeline: plotting
 
 
-The pipeline has support for plotting via StatPlots and the `@df` macro:
+The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
 
 
 ```julia
@@ -483,6 +518,29 @@ end
 
 
 ![](../corrplot.svg)
+
+
+---
+
+
+
+
+# Pipeline: plotting
+
+
+The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
+
+
+```julia
+using VegaLite
+@apply iris begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    @vlplot(:point, x = :Ratio, y = :Sum, color = :Species)
+end
+```
+
+
+![](../scatter.svg)
 
 
 ---

@@ -9,7 +9,7 @@ Pietro Vertechi, JuliaCon 2018
 
 - **JuliaDBMeta**, a package inspired on DataFramesMeta and Query and built on top of JuliaDB, provides a set of macros to manipulate tabular data (filter, transform, split-apply-combine, etc...)
 --
-- JuliaDBMeta operations can be concatenated and the result can then be piped into a **StatPlots**-powered statistical visualization
+- JuliaDBMeta operations can be concatenated, mixing and matching with external packages for manipulating, visualizing or saving data: examples of integration with Query, VegaLite and StatPlots
 --
 - **Interact** package allows to run these manipulations and visualizations from a "hackable" and composable GUI
 
@@ -177,6 +177,20 @@ end
 
 ---
 
+# Pipeline: split-apply-combine
+
+Sometimes the data is naturally divided into groups (for example the different `Species` of our dataset) and we may wish to apply the pipeline separately on each group
+
+```@example meta
+@apply iris :Species flatten=true begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:3]
+end
+```
+
+---
+
 # Pipeline: out of core
 
 We can run our pipeline in parallel, splitting by chunks on the various processors:
@@ -191,15 +205,18 @@ end
 
 ---
 
-# Pipeline: split-apply-combine
+# Pipeline: out of core Query support
 
-Or splitting by some grouping variable:
+The functions in the `@applychunked` pipeline are run on normal in-memory table chunks, so one can put anything that works for in-memory tables (e.g Query operators).
 
 ```@example meta
-@apply iris :Species flatten=true begin
+import Query
+
+@applychunked iris2 begin
     @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
-    sort(_, :Ratio, rev = true)
-    _[1:3]
+    Query.@orderby_descending(_.Ratio)
+    Query.@take(3)
+    table
 end
 ```
 
@@ -207,7 +224,7 @@ end
 
 # Pipeline: plotting
 
-The pipeline has support for plotting via StatPlots and the `@df` macro:
+The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
 
 ```julia
 using StatPlots
@@ -217,6 +234,21 @@ using StatPlots
 end
 ```
 ![](../corrplot.svg)
+
+---
+
+# Pipeline: plotting
+
+The pipeline has support for plotting via external packages, provided they accept JuliaDB tables as input:
+
+```julia
+using VegaLite
+@apply iris begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    @vlplot(:point, x = :Ratio, y = :Sum, color = :Species)
+end
+```
+![](../scatter.svg)
 
 ---
 
