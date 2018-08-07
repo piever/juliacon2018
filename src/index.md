@@ -17,56 +17,12 @@ g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 
 ---
 
-# Exploiting JuliaDB's features
+# JuliaDBMeta macros
 
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%; text-align:center;">
-        <strong>JuliaDB</strong>
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%; text-align:center;">
-        <strong>JuliaDBMeta</strong>
-    </div>
-</div>
-<div style="height: 1em;"></div>
+Roughly two categories:
 
-g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%;">
-        Fully-typed tables
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%;">
-        Replace symbols with respective columns in a type-inferrable way
-    </div>
-</div>
-<div style="height: 1em;"></div>
-
-g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%;">
-        Fast row iteration &rarr; efficiently execute a function row by row (specifying which fields to materialize while iterating)
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%;">
-        Detect anonymous function and necessary fields
-    </div>
-</div>
-<div style="height: 1em;"></div>
-
-g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%;">
-        Parallel data storage and parallel computations
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%;">
-        Detect if user command can be parallelized automatically
-    </div>
-</div>
+- column-wise (user works with columns of the table)
+- row-wise (user works with entries of a row)
 
 ---
 
@@ -80,9 +36,9 @@ iris = loadtable(filepath)
 
 ---
 
-# Type stable column extraction
+# Column-wise macros
 
-Each symbol gets replaced with the corresponding column:
+Simplest example is `@with`: each symbol gets replaced with the corresponding column.
 
 ```@example meta
 @with iris :SepalLength .* :SepalWidth ./ mean(:SepalWidth)
@@ -90,7 +46,7 @@ Each symbol gets replaced with the corresponding column:
 
 ---
 
-# Type stable column extraction
+# Type stability
 
 ```@example meta
 using Base.Test
@@ -100,9 +56,9 @@ f(df) = @with df :SepalLength
 
 ---
 
-# Fast row iteration
+# Row-wise macros
 
-Apply a given expression row by row:
+Simplest example is `@map`: apply a given expression row by row:
 
 ```@example meta
 @map iris :SepalLength/:SepalWidth
@@ -110,7 +66,7 @@ Apply a given expression row by row:
 
 ---
 
-# Fast row iteration: under the hood
+# Row-wise macros: under the hood
 
 ```julia
 @map iris :SepalLength/:SepalWidth
@@ -128,7 +84,7 @@ map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth
 
 ---
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 The same trick can be used to add or modify one or more columns:
 
@@ -138,7 +94,7 @@ The same trick can be used to add or modify one or more columns:
 
 ---
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 The same trick can be used to add or modify one or more columns:
 
@@ -154,7 +110,7 @@ or to select data:
 
 ---
 
-# Fast row iteration: out-of-core
+# Row-wise macros: out-of-core
 
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
 

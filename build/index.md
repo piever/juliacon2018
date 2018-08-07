@@ -52,28 +52,14 @@ Pietro Vertechi, JuliaCon 2018
 
 
 
-# Exploiting JuliaDB's features
+# JuliaDBMeta macros
 
 
-<div style="display: flex; orientation: row;">     <div style="width: 47%; text-align:center;">         <strong>JuliaDB</strong>     </div>     <div style="width: 6%;"></div>     <div style="width: 47%; text-align:center;">         <strong>JuliaDBMeta</strong>     </div> </div> <div style="height: 1em;"></div>
+Roughly two categories:
 
 
---
-
-
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fully-typed tables     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Replace symbols with respective columns in a type-inferrable way     </div> </div> <div style="height: 1em;"></div>
-
-
---
-
-
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fast row iteration &rarr; efficiently execute a function row by row (specifying which fields to materialize while iterating)     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect anonymous function and necessary fields     </div> </div> <div style="height: 1em;"></div>
-
-
---
-
-
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Parallel data storage and parallel computations     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect if user command can be parallelized automatically     </div> </div>
+  * column-wise (user works with columns of the table)
+  * row-wise (user works with entries of a row)
 
 
 ---
@@ -120,10 +106,10 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Type stable column extraction
+# Column-wise macros
 
 
-Each symbol gets replaced with the corresponding column:
+Simplest example is `@with`: each symbol gets replaced with the corresponding column.
 
 
 ```julia
@@ -160,7 +146,7 @@ Each symbol gets replaced with the corresponding column:
 
 
 
-# Type stable column extraction
+# Type stability
 
 
 ```julia
@@ -199,10 +185,10 @@ f(df) = @with df :SepalLength
 
 
 
-# Fast row iteration
+# Row-wise macros
 
 
-Apply a given expression row by row:
+Simplest example is `@map`: apply a given expression row by row:
 
 
 ```julia
@@ -239,7 +225,7 @@ Apply a given expression row by row:
 
 
 
-# Fast row iteration: under the hood
+# Row-wise macros: under the hood
 
 
 ```julia
@@ -275,7 +261,7 @@ map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth
 
 
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 
 The same trick can be used to add or modify one or more columns:
@@ -315,7 +301,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species      Ratio
 
 
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 
 The same trick can be used to add or modify one or more columns:
@@ -351,7 +337,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Fast row iteration: out-of-core
+# Row-wise macros: out-of-core
 
 
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
