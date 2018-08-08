@@ -106,7 +106,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Column-wise macros
+# Column-wise macros: working with columns
 
 
 Simplest example is `@with`: each symbol gets replaced with the corresponding column.
@@ -165,7 +165,7 @@ f(df) = @with df :SepalLength
 
 
 
-# Row-wise macros
+# Row-wise macros: doing things row by row
 
 
 Simplest example is `@map`: apply a given expression row by row.
@@ -298,7 +298,7 @@ The same trick can be used to add or modify one or more columns:
 ```
 
 
-or to select data:
+or to select data (technically, take a view):
 
 
 ```julia
@@ -316,6 +316,33 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 4.9          2.4         3.3          1.0         "versicolor"
 4.9          2.5         4.5          1.7         "virginica"
 ```
+
+
+---
+
+
+
+
+# Row-wise macros: examples
+
+
+The same trick can be used to add or modify one or more columns:
+
+
+```julia
+@transform iris {Ratio = :SepalLength/:SepalWidth}
+```
+
+
+or to select data (technically, take a view):
+
+
+```julia
+@where iris :SepalLength == 4.9
+```
+
+
+And some variations are also supported (`@byrow!` for in-place modification, or `@filter` to take a slice rather than a view).
 
 
 ---
