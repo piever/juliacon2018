@@ -430,9 +430,9 @@ Sometimes the data is naturally divided into groups (for example the different `
 end
 ```
 
-```
+<pre>
 Table with 9 rows, 7 columns:
-Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
+<b>Species</b>       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
 ─────────────────────────────────────────────────────────────────────────────
 "setosa"      4.5          2.3         1.3          0.3         1.95652  6.8
 "setosa"      5.0          3.0         1.6          0.2         1.66667  8.0
@@ -443,7 +443,7 @@ Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
 "virginica"   7.7          2.6         6.9          2.3         2.96154  10.3
 "virginica"   7.7          2.8         6.7          2.0         2.75     10.5
 "virginica"   6.0          2.2         5.0          1.5         2.72727  8.2
-```
+</pre>
 
 
 ---
@@ -584,4 +584,3 @@ The [Interact](https://github.com/JuliaGizmos/Interact.jl) and [TableWidgets](ht
   * The JuliaPlots organization (where I started contributing to the Julia package ecosystem) for patiently guiding me through my first PRs
   * My GSoC mentor Shashi Gowda for his help both on JuliaDB and on the interactive apps
   * The JuliaCon organizers
-
