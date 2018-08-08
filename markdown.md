@@ -21,8 +21,11 @@ Pietro Vertechi, JuliaCon 2018
 
 Roughly two categories:
 
+--
+
 - column-wise (user works with columns of the table)
-- row-wise (user works with entries of a row)
+--
+- row-wise (user works with entries of a row, expression will be executed row by row)
 
 ---
 

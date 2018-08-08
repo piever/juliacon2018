@@ -21,8 +21,11 @@ g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 
 Roughly two categories:
 
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+
 - column-wise (user works with columns of the table)
-- row-wise (user works with entries of a row)
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+- row-wise (user works with entries of a row, expression will be executed row by row)
 
 ---
 
