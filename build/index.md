@@ -20,22 +20,31 @@ Pietro Vertechi, JuliaCon 2018
 
 
 
-# Outline
-
-
-  * **JuliaDBMeta**, a package inspired on DataFramesMeta and Query and built on top of JuliaDB, provides a set of macros to manipulate tabular data (filter, transform, split-apply-combine, etc...)
+# What is JuliaDBMeta?
 
 
 --
 
 
-  * JuliaDBMeta operations can be concatenated and the result can then be piped into a **StatPlots**-powered statistical visualization
+  * JuliaDBMeta macros (inspired on DataFramesMeta and Query) allow to use the JuliaDB library for table manipulations with a simplified syntax
 
 
 --
 
 
-  * **Interact** package allows to run these manipulations and visualizations from a "hackable" and composable GUI
+  * JuliaDBMeta operations can be concatenated, mixing and matching with external packages, to create a data analysis pipeline (both in memory and out-of-core)
+
+
+--
+
+
+  * JuliaDBMeta pipelines integrate smoothly with several plotting libraries (VegaLite, StatPlots, Gadfly)
+
+
+--
+
+
+  * the new Interact package allows to run these manipulations and visualizations from a "hackable" and composable GUI
 
 
 ---
@@ -43,28 +52,22 @@ Pietro Vertechi, JuliaCon 2018
 
 
 
-# Exploiting JuliaDB's features
+# JuliaDBMeta macros
 
 
-<div style="display: flex; orientation: row;">     <div style="width: 47%; text-align:center;">         <strong>JuliaDB</strong>     </div>     <div style="width: 6%;"></div>     <div style="width: 47%; text-align:center;">         <strong>JuliaDBMeta</strong>     </div> </div> <div style="height: 1em;"></div>
-
-
---
-
-
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fully-typed tables     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Replace symbols with respective columns in a type-inferrable way     </div> </div> <div style="height: 1em;"></div>
+Roughly two categories:
 
 
 --
 
 
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Fast row iteration &rarr; efficiently execute a function row by row (specifying which fields to materialize while iterating)     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect anonymous function and necessary fields     </div> </div> <div style="height: 1em;"></div>
+  * column-wise (user works with columns of the table)
 
 
 --
 
 
-<div style="display: flex; orientation: row;">     <div style="width: 47%;">         Parallel data storage and parallel computations     </div>     <div style="width: 6%;"></div>     <div style="width: 47%;">         Detect if user command can be parallelized automatically     </div> </div>
+  * row-wise (user works with entries of a row, expression will be executed row by row)
 
 
 ---
@@ -111,38 +114,18 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Type stable column extraction
+# Column-wise macros: working with columns
 
 
-Each symbol gets replaced with the corresponding column:
+Simplest example is `@with`: each symbol gets replaced with the corresponding column.
 
 
 ```julia
-@with iris :SepalLength .* :SepalWidth ./ mean(:SepalWidth)
+@with iris mean(:SepalLength) / mean(:SepalWidth)
 ```
 
 ```
-150-element Array{Float64,1}:
- 5.83842
- 4.80811
- 4.91932
- 4.6642
- 5.88748
- 6.88836
- 5.11557
- 5.5604
- 4.17357
- 4.96838
- ⋮
- 6.99629
- 5.12211
- 7.11731
- 7.23179
- 6.57436
- 5.15155
- 6.37811
- 6.8949
- 5.78936
+1.911251635412124
 ```
 
 
@@ -151,7 +134,7 @@ Each symbol gets replaced with the corresponding column:
 
 
 
-# Type stable column extraction
+# Column-wise macros: type inferrability
 
 
 ```julia
@@ -190,10 +173,10 @@ f(df) = @with df :SepalLength
 
 
 
-# Fast row iteration
+# Row-wise macros: doing things row by row
 
 
-Apply a given expression row by row:
+Simplest example is `@map`: apply a given expression row by row.
 
 
 ```julia
@@ -230,7 +213,7 @@ Apply a given expression row by row:
 
 
 
-# Fast row iteration: under the hood
+# Row-wise macros: under the hood
 
 
 ```julia
@@ -261,12 +244,18 @@ map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth
 ```
 
 
+--
+
+
+Very important for performance in tables with many columns, as we avoid materializing unnecessary fields!
+
+
 ---
 
 
 
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 
 The same trick can be used to add or modify one or more columns:
@@ -306,7 +295,7 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species      Ratio
 
 
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 
 The same trick can be used to add or modify one or more columns:
@@ -317,7 +306,7 @@ The same trick can be used to add or modify one or more columns:
 ```
 
 
-or to select data:
+or to select data (technically, take a view):
 
 
 ```julia
@@ -342,7 +331,34 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species
 
 
 
-# Fast row iteration: out-of-core
+# Row-wise macros: examples
+
+
+The same trick can be used to add or modify one or more columns:
+
+
+```julia
+@transform iris {Ratio = :SepalLength/:SepalWidth}
+```
+
+
+or to select data (technically, take a view):
+
+
+```julia
+@where iris :SepalLength == 4.9
+```
+
+
+And some variations are also supported (`@byrow!` for in-place modification, or `@filter` to take a slice rather than a view).
+
+
+---
+
+
+
+
+# Row-wise macros: out-of-core
 
 
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
@@ -400,6 +416,41 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
 
 
 
+# Pipeline: split-apply-combine
+
+
+Sometimes the data is naturally divided into groups (for example the different `Species` of our dataset) and we may wish to apply the pipeline separately on each group
+
+
+```julia
+@apply iris :Species flatten=true begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:3]
+end
+```
+
+<pre>
+Table with 9 rows, 7 columns:
+<b>Species</b>       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
+─────────────────────────────────────────────────────────────────────────────
+"setosa"      4.5          2.3         1.3          0.3         1.95652  6.8
+"setosa"      5.0          3.0         1.6          0.2         1.66667  8.0
+"setosa"      4.9          3.0         1.4          0.2         1.63333  7.9
+"versicolor"  6.2          2.2         4.5          1.5         2.81818  8.4
+"versicolor"  6.3          2.3         4.4          1.3         2.73913  8.6
+"versicolor"  6.0          2.2         4.0          1.0         2.72727  8.2
+"virginica"   7.7          2.6         6.9          2.3         2.96154  10.3
+"virginica"   7.7          2.8         6.7          2.0         2.75     10.5
+"virginica"   6.0          2.2         5.0          1.5         2.72727  8.2
+</pre>
+
+
+---
+
+
+
+
 # Pipeline: out of core
 
 
@@ -432,33 +483,33 @@ SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
 
 
 
-# Pipeline: split-apply-combine
+# Pipeline: out of core Query support
 
 
-Or splitting by some grouping variable:
+The functions in the `@applychunked` pipeline are run on normal in-memory table chunks, so one can put anything that works for in-memory tables (e.g Query operators).
 
 
 ```julia
-@apply iris :Species flatten=true begin
+import Query
+
+@applychunked iris2 begin
     @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
-    sort(_, :Ratio, rev = true)
-    _[1:3]
+    Query.@orderby_descending(_.Ratio)
+    Query.@take(3)
+    table
 end
 ```
 
 ```
-Table with 9 rows, 7 columns:
-Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
+Distributed Table with 6 rows in 2 chunks:
+SepalLength  SepalWidth  PetalLength  PetalWidth  Species       Ratio    Sum
 ─────────────────────────────────────────────────────────────────────────────
-"setosa"      4.5          2.3         1.3          0.3         1.95652  6.8
-"setosa"      5.0          3.0         1.6          0.2         1.66667  8.0
-"setosa"      4.9          3.0         1.4          0.2         1.63333  7.9
-"versicolor"  6.2          2.2         4.5          1.5         2.81818  8.4
-"versicolor"  6.3          2.3         4.4          1.3         2.73913  8.6
-"versicolor"  6.0          2.2         4.0          1.0         2.72727  8.2
-"virginica"   7.7          2.6         6.9          2.3         2.96154  10.3
-"virginica"   7.7          2.8         6.7          2.0         2.75     10.5
-"virginica"   6.0          2.2         5.0          1.5         2.72727  8.2
+6.2          2.2         4.5          1.5         "versicolor"  2.81818  8.4
+6.0          2.2         4.0          1.0         "versicolor"  2.72727  8.2
+6.3          2.5         4.9          1.5         "versicolor"  2.52     8.8
+7.7          2.6         6.9          2.3         "virginica"   2.96154  10.3
+7.7          2.8         6.7          2.0         "virginica"   2.75     10.5
+6.3          2.3         4.4          1.3         "versicolor"  2.73913  8.6
 ```
 
 
@@ -470,7 +521,7 @@ Species       SepalLength  SepalWidth  PetalLength  PetalWidth  Ratio    Sum
 # Pipeline: plotting
 
 
-The pipeline has support for plotting via StatPlots and the `@df` macro:
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
 
 
 ```julia
@@ -483,6 +534,29 @@ end
 
 
 ![](../corrplot.svg)
+
+
+---
+
+
+
+
+# Pipeline: plotting
+
+
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
+
+
+```julia
+using VegaLite
+@apply iris begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    @vlplot(:point, x = :Ratio, y = :Sum, color = :Species)
+end
+```
+
+
+![](../scatter.svg)
 
 
 ---
@@ -510,4 +584,3 @@ The [Interact](https://github.com/JuliaGizmos/Interact.jl) and [TableWidgets](ht
   * The JuliaPlots organization (where I started contributing to the Julia package ecosystem) for patiently guiding me through my first PRs
   * My GSoC mentor Shashi Gowda for his help both on JuliaDB and on the interactive apps
   * The JuliaCon organizers
-

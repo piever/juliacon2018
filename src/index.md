@@ -5,66 +5,27 @@ Pietro Vertechi, JuliaCon 2018
 
 ---
 
-# Outline
-
-- **JuliaDBMeta**, a package inspired on DataFramesMeta and Query and built on top of JuliaDB, provides a set of macros to manipulate tabular data (filter, transform, split-apply-combine, etc...)
+# What is JuliaDBMeta?
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- JuliaDBMeta operations can be concatenated and the result can then be piped into a **StatPlots**-powered statistical visualization
+- JuliaDBMeta macros (inspired on DataFramesMeta and Query) allow to use the JuliaDB library for table manipulations with a simplified syntax
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-- **Interact** package allows to run these manipulations and visualizations from a "hackable" and composable GUI
+- JuliaDBMeta operations can be concatenated, mixing and matching with external packages, to create a data analysis pipeline (both in memory and out-of-core)
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+- JuliaDBMeta pipelines integrate smoothly with several plotting libraries (VegaLite, StatPlots, Gadfly)
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+- the new Interact package allows to run these manipulations and visualizations from a "hackable" and composable GUI
 
 ---
 
-# Exploiting JuliaDB's features
+# JuliaDBMeta macros
 
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%; text-align:center;">
-        <strong>JuliaDB</strong>
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%; text-align:center;">
-        <strong>JuliaDBMeta</strong>
-    </div>
-</div>
-<div style="height: 1em;"></div>
+Roughly two categories:
 
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%;">
-        Fully-typed tables
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%;">
-        Replace symbols with respective columns in a type-inferrable way
-    </div>
-</div>
-<div style="height: 1em;"></div>
-
+- column-wise (user works with columns of the table)
 g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%;">
-        Fast row iteration &rarr; efficiently execute a function row by row (specifying which fields to materialize while iterating)
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%;">
-        Detect anonymous function and necessary fields
-    </div>
-</div>
-<div style="height: 1em;"></div>
-
-g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
-
-<div style="display: flex; orientation: row;">
-    <div style="width: 47%;">
-        Parallel data storage and parallel computations
-    </div>
-    <div style="width: 6%;"></div>
-    <div style="width: 47%;">
-        Detect if user command can be parallelized automatically
-    </div>
-</div>
+- row-wise (user works with entries of a row, expression will be executed row by row)
 
 ---
 
@@ -78,17 +39,17 @@ iris = loadtable(filepath)
 
 ---
 
-# Type stable column extraction
+# Column-wise macros: working with columns
 
-Each symbol gets replaced with the corresponding column:
+Simplest example is `@with`: each symbol gets replaced with the corresponding column.
 
 ```@example meta
-@with iris :SepalLength .* :SepalWidth ./ mean(:SepalWidth)
+@with iris mean(:SepalLength) / mean(:SepalWidth)
 ```
 
 ---
 
-# Type stable column extraction
+# Column-wise macros: type inferrability
 
 ```@example meta
 using Base.Test
@@ -98,9 +59,9 @@ f(df) = @with df :SepalLength
 
 ---
 
-# Fast row iteration
+# Row-wise macros: doing things row by row
 
-Apply a given expression row by row:
+Simplest example is `@map`: apply a given expression row by row.
 
 ```@example meta
 @map iris :SepalLength/:SepalWidth
@@ -108,7 +69,7 @@ Apply a given expression row by row:
 
 ---
 
-# Fast row iteration: under the hood
+# Row-wise macros: under the hood
 
 ```julia
 @map iris :SepalLength/:SepalWidth
@@ -124,9 +85,13 @@ g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
 map(t -> t.SepalLength / t.SepalWidth, iris, select = (:SepalLength, :SepalWidth))
 ```
 
+g82eZhEVQvvZDem8bJPT3ib7eqBDsEvQJuzIDBnU9pdW0Lb4Nf
+
+Very important for performance in tables with many columns, as we avoid materializing unnecessary fields!
+
 ---
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 The same trick can be used to add or modify one or more columns:
 
@@ -136,7 +101,7 @@ The same trick can be used to add or modify one or more columns:
 
 ---
 
-# Fast row iteration: examples
+# Row-wise macros: examples
 
 The same trick can be used to add or modify one or more columns:
 
@@ -144,7 +109,7 @@ The same trick can be used to add or modify one or more columns:
 @transform iris {Ratio = :SepalLength/:SepalWidth}
 ```
 
-or to select data:
+or to select data (technically, take a view):
 
 ```@example meta
 @where iris :SepalLength == 4.9
@@ -152,7 +117,25 @@ or to select data:
 
 ---
 
-# Fast row iteration: out-of-core
+# Row-wise macros: examples
+
+The same trick can be used to add or modify one or more columns:
+
+```julia
+@transform iris {Ratio = :SepalLength/:SepalWidth}
+```
+
+or to select data (technically, take a view):
+
+```julia
+@where iris :SepalLength == 4.9
+```
+
+And some variations are also supported (`@byrow!` for in-place modification, or `@filter` to take a slice rather than a view).
+
+---
+
+# Row-wise macros: out-of-core
 
 As each row-wise macro implements a local computation, it will be parallelized out of the box if the data is stored on several processors.
 
@@ -177,6 +160,20 @@ end
 
 ---
 
+# Pipeline: split-apply-combine
+
+Sometimes the data is naturally divided into groups (for example the different `Species` of our dataset) and we may wish to apply the pipeline separately on each group
+
+```@example meta
+@apply iris :Species flatten=true begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    sort(_, :Ratio, rev = true)
+    _[1:3]
+end
+```
+
+---
+
 # Pipeline: out of core
 
 We can run our pipeline in parallel, splitting by chunks on the various processors:
@@ -191,15 +188,18 @@ end
 
 ---
 
-# Pipeline: split-apply-combine
+# Pipeline: out of core Query support
 
-Or splitting by some grouping variable:
+The functions in the `@applychunked` pipeline are run on normal in-memory table chunks, so one can put anything that works for in-memory tables (e.g Query operators).
 
 ```@example meta
-@apply iris :Species flatten=true begin
+import Query
+
+@applychunked iris2 begin
     @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
-    sort(_, :Ratio, rev = true)
-    _[1:3]
+    Query.@orderby_descending(_.Ratio)
+    Query.@take(3)
+    table
 end
 ```
 
@@ -207,7 +207,7 @@ end
 
 # Pipeline: plotting
 
-The pipeline has support for plotting via StatPlots and the `@df` macro:
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
 
 ```julia
 using StatPlots
@@ -217,6 +217,21 @@ using StatPlots
 end
 ```
 ![](../corrplot.svg)
+
+---
+
+# Pipeline: plotting
+
+Plotting is supported via external packages, provided they accept JuliaDB tables as input:
+
+```julia
+using VegaLite
+@apply iris begin
+    @transform {Ratio = :SepalLength/:SepalWidth, Sum = :SepalLength+:SepalWidth}
+    @vlplot(:point, x = :Ratio, y = :Sum, color = :Species)
+end
+```
+![](../scatter.svg)
 
 ---
 
