@@ -13,7 +13,7 @@ end
 
 function mypipeline()
     wdg = filepicker()
-    widget(mypipeline∘loadtable, wdg, init = wdg) # initialize the widget as a filepicker, when the filepicker gets used, replace with the output of `mypipeline` called with the loaded table
+    widget(mypipeline∘loadtable, wdg, init = Observable{Any}(wdg)) # initialize the widget as a filepicker, when the filepicker gets used, replace with the output of `mypipeline` called with the loaded table
 end
 
 ##
